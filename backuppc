@@ -20,6 +20,16 @@ print "<<<backuppc>>>\n";
 foreach $key (keys %Status) {
   if ($key !~ /^ /) {
     $age = time() - $Status{$key}{'lastGoodBackupTime'};
-    print "$key $age\n";
+
+    $size = 0;
+    open my $fh, '<', "/var/lib/backuppc/pc/$key/backups" or die;
+    while (my $line = <$fh>) {
+      if ($line =~ /^[0-9]+\tfull\t[0-9]+\t[0-9]+\t[0-9]+\t([0-9]+)/) {
+	$size = $1;
+      }
+    }
+    close $fh;
+
+    print "$key $age $size\n";
   }
 }
