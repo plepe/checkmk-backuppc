@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use JSON::XS;
+
+# read perl data from BackupPC
+$code = `/usr/share/backuppc/bin/BackupPC_serverMesg status hosts`;
+
+if($code =~ /^Got reply: (.*)$/) {
+  $code = $1;
+}
+else {
+  print "Does not match!\n";
+  exit(1);
+}
+
+# convert to data structure
+eval $code;
+
+# print to JSON
+print encode_json \%Status;
