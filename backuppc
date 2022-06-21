@@ -16,4 +16,10 @@ else {
 eval $code;
 
 # print to JSON
-print encode_json \%Status;
+print "<<<backuppc>>>\n";
+foreach $key (keys %Status) {
+  if ($key !~ /^ /) {
+    $age = time() - $Status{$key}{'lastGoodBackupTime'};
+    print "$key $age\n";
+  }
+}
