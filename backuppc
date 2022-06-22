@@ -1,35 +1,20 @@
-#!/usr/bin/perl
-use JSON::XS;
+#!/usr/bin/python3
+import os
+import re
+import time
 
-# read perl data from BackupPC
-$code = `sudo -ubackuppc /usr/share/backuppc/bin/BackupPC_serverMesg status hosts`;
+currentTime = int(time.time())
 
-if($code =~ /^Got reply: (.*)$/) {
-  $code = $1;
-}
-else {
-  print "Does not match!\n";
-  exit(1);
-}
+print("<<<backuppc>>>")
 
-# convert to data structure
-eval $code;
-
-# print to JSON
-print "<<<backuppc>>>\n";
-foreach $key (keys %Status) {
-  if ($key !~ /^ /) {
-    $age = time() - $Status{$key}{'lastGoodBackupTime'};
-
-    $size = 0;
-    open my $fh, '<', "/var/lib/backuppc/pc/$key/backups" or die;
-    while (my $line = <$fh>) {
-      if ($line =~ /^[0-9]+\tfull\t[0-9]+\t[0-9]+\t[0-9]+\t([0-9]+)/) {
-	$size = $1;
-      }
-    }
-    close $fh;
-
-    print "$key $age $size\n";
-  }
-}
+path = '/var/lib/backuppc/pc/'
+for pc in os.listdir(path):
+    statusFile = open(path + pc + '/backups', 'r')
+    for line in statusFile.readlines():
+        m = re.search('^[0-9]+\t(incr|full)\t[0-9]+\t([0-9]+)\t[0-9]+\t([0-9]+)', line)
+        if (m):
+            last = m
+            if (m[1] == 'full'):
+                lastFull = m
+    if lastFull:
+        print("{} {} {} {}".format(pc, currentTime - int(last[2]), currentTime - int(lastFull[2]), lastFull[3]))
